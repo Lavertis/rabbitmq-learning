@@ -10,14 +10,28 @@ namespace Common.Services;
 
 public class TransferService
 {
+    private readonly IModel _channel;
     private readonly MyConfig _config;
+
+    private readonly IConnection _connection;
     private readonly ILogger<TransferService> _logger;
+
     private readonly List<Transfer> _transfers = new();
 
     public TransferService(IOptions<MyConfig> config, ILogger<TransferService> logger)
     {
         _config = config.Value;
         _logger = logger;
+
+        _connection = new ConnectionFactory {HostName = "localhost"}.CreateConnection();
+        _channel = _connection.CreateModel();
+        _channel.QueueDeclare(
+            queue: _config.CurrentBank + "_outgoing_transfers",
+            durable: false,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null
+        );
     }
 
     public List<Transfer> GetAllTransfers()
@@ -54,19 +68,8 @@ public class TransferService
         };
         AddTransfer(transfer);
 
-        var factory = new ConnectionFactory {HostName = "localhost"};
-        using var connection = factory.CreateConnection();
-        using var channel = connection.CreateModel();
-        channel.QueueDeclare(
-            queue: _config.CurrentBank + "_outgoing_transfers",
-            durable: false,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        );
-
         var sendBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transfer));
-        channel.BasicPublish("", _config.CurrentBank + "_outgoing_transfers", null, sendBytes);
+        _channel.BasicPublish("", _config.CurrentBank + "_outgoing_transfers", null, sendBytes);
         _logger.LogInformation($"Transfer {transfer} sent to " + _config.CurrentBank);
     }
 }

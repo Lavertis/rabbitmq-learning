@@ -3,7 +3,7 @@ using Common.Models;
 using Common.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Bank_2.Controllers;
+namespace Common.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

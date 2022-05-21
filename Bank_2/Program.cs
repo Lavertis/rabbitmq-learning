@@ -1,12 +1,14 @@
 using Common.BackgroundServices;
 using Common.Config;
+using Common.Controllers;
 using Common.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+var assembly = typeof(BankController).Assembly;
+builder.Services.AddControllers().AddApplicationPart(assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

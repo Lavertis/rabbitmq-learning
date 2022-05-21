@@ -14,22 +14,24 @@ public class IncomingTransferService : BackgroundService
 {
     private readonly AccountService _accountService;
     private readonly IModel _channel;
-
     private readonly MyConfig _config;
+
     private readonly IConnection _connection;
     private readonly ILogger<IncomingTransferService> _logger;
     private readonly TransferService _transferService;
 
-    public IncomingTransferService(IOptions<MyConfig> config,
-        ILogger<IncomingTransferService> logger,
+    public IncomingTransferService(ILogger<IncomingTransferService> logger,
+        IOptions<MyConfig> config,
         TransferService transferService,
         AccountService accountService)
     {
         _config = config.Value;
         _logger = logger;
+
         _transferService = transferService;
         _accountService = accountService;
-        _connection = new ConnectionFactory().CreateConnection();
+
+        _connection = new ConnectionFactory {HostName = "localhost"}.CreateConnection();
         _channel = _connection.CreateModel();
 
         _channel.QueueDeclare(queue: _config.SecondBank + "_outgoing_transfers",

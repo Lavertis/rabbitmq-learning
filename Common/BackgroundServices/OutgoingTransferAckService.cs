@@ -12,20 +12,21 @@ namespace Common.BackgroundServices;
 public class OutgoingTransferAckService : BackgroundService
 {
     private readonly IModel _channel;
-
     private readonly MyConfig _config;
+
     private readonly IConnection _connection;
     private readonly ILogger<OutgoingTransferAckService> _logger;
+
     private readonly TransferService _transferService;
 
-    public OutgoingTransferAckService(IOptions<MyConfig> config,
-        ILogger<OutgoingTransferAckService> logger,
+    public OutgoingTransferAckService(ILogger<OutgoingTransferAckService> logger,
+        IOptions<MyConfig> config,
         TransferService transferService)
     {
         _config = config.Value;
         _logger = logger;
         _transferService = transferService;
-        _connection = new ConnectionFactory().CreateConnection();
+        _connection = new ConnectionFactory {HostName = "localhost"}.CreateConnection();
         _channel = _connection.CreateModel();
 
         _channel.QueueDeclare(queue: _config.CurrentBank + "_outgoing_transfers_ack",
